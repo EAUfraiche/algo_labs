@@ -1,9 +1,9 @@
 def snake_cleaning(grid, C):
     """
     Робот прибирає підлогу змійкою.
-    grid: 2D список підлоги (0 - сміття)
+    grid: 2D список підлоги (число ≥0 — кількість сміття на клітинці)
     C: об'єм баку
-    Повертає список координат прибраних клітинок.
+    Повертає список координат прибраних клітинок (y, x) та кількість сміття на кожній.
     """
     m = len(grid)
     n = len(grid[0])
@@ -20,15 +20,17 @@ def snake_cleaning(grid, C):
         for j in indices:
             y = i
             x = j
-            if grid[y][x] == 0:
-                grid[y][x] = 1  
-                result.append((y, x))
-                collected += 1
+            while grid[y][x] > 0:
+                space_left = C - collected
+                take = min(grid[y][x], space_left)  
+                collected += take
+                grid[y][x] -= take
+                result.append((y, x, take))
 
-            if collected >= C:
-                print(f"Бак заповнений! Робот повертається на старт (0,0).")
-                x, y = 0, 0
-                collected = 0
+                if collected == C:
+                    print(f"Бак заповнений! Робот повертається на старт (0,0).")
+                    x, y = 0, 0
+                    collected = 0  
 
     return result, (y, x)
 
@@ -38,7 +40,7 @@ n = int(input("Введіть кількість стовпців (n): "))
 C = int(input("Введіть об’єм баку C: "))
 
 grid = []
-print(f"Введіть {m} рядків по {n} чисел через пробіл (0 - сміття, інше - чисто):")
+print(f"Введіть {m} рядків по {n} чисел через пробіл (число ≥0 — кількість сміття на клітинці):")
 for i in range(m):
     row = list(map(int, input(f"Рядок {i+1}: ").split()))
     if len(row) != n:
@@ -48,7 +50,10 @@ for i in range(m):
 
 cleaned_cells, final_pos = snake_cleaning(grid, C)
 
-print("\nПослідовність координат прибраних клітинок за маршрутом робота:")
-print(cleaned_cells)
-print(f"Кінцеві координати робота: {final_pos}")
-print(f"Всього прибрано клітинок: {len(cleaned_cells)}")
+print("\nПослідовність прибраних клітинок та кількість сміття на них:")
+for y, x, trash in cleaned_cells:
+    print(f"Клітинка ({y},{x}) — зібрано сміття: {trash}")
+
+print(f"\nКінцеві координати робота: {final_pos}")
+total_trash = sum(trash for _, _, trash in cleaned_cells)
+print(f"Всього зібрано сміття: {total_trash}")
